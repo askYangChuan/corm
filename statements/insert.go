@@ -1,7 +1,7 @@
 package statements
 
 import (
-	"github.com/askYangc/corm/corm/parse"
+	"github.com/askYangc/corm/parse"
 )
 
 /**

@@ -2,7 +2,7 @@ package corm
 
 import (
 	"database/sql"
-	"github.com/askYangc/corm/corm/statements"
+	"github.com/askYangc/corm/statements"
 	"github.com/jmoiron/sqlx"
 )
 

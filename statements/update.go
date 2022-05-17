@@ -1,6 +1,6 @@
 package statements
 
-import "github.com/askYangc/corm/corm/parse"
+import "github.com/askYangc/corm/parse"
 
 /**
  * @Author: yc
