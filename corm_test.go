@@ -83,10 +83,10 @@ func mysqlInit(databaseSetting *Database) {
 func TestMain(m *testing.M) {
 	databaseSetting := Database{
 		Type:     "mysql",
-		User:     "ijmaster",
-		Password: "ijjazhang",
+		User:     "root",
+		Password: "123456",
 		Host:     "10.135.255.202:3306",
-		Name:     "cmp",
+		Name:     "test",
 	}
 	mysqlInit(&databaseSetting)
 	m.Run()
