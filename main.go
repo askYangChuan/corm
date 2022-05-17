@@ -1,32 +1,28 @@
 package main
 
 import (
-	"corms/corm"
-	"corms/models"
+	"fmt"
+	"github.com/askYangc/corm/corm"
+	"github.com/askYangc/corm/models"
+	"github.com/askYangc/corm/setting"
 )
 
 func main() {
+	setting.Setup("conf/app.ini")
 	models.Setup()
-
-	main_test()
-}
-
-func main_test() {
 	db := corm.NewDB(models.DB())
 
-	/*
-	corm.ParseTable(&models.CmpDevs{})
-	corm.Show(&models.CmpDevs{})
+	dev := models.CmpDevs{}
 
-	 */
-	//插入
-	db.Create(&models.CmpDevs{})
-	//更新
-	//db.Update(&models.CmpDevs{})
-/*
-	db.Select("Name", "Age", "CreatedAt").Create(&user)
-   // INSERT INTO `users` (`name`,`age`,`created_at`) VALUES ("jinzhu", 18, "2020-07-04 11:05:21.775")
- */
-	//db.Where("dev_type=?", 10).Get(&models.CmpDevs{})
+	models.DB().Get(&dev, "select * from cmp_devs where id=5 limit 1")
 
+	dev.DevType = 500
+	dev.Sn = "update"
+	db.InsertOrUpdate(&dev)
+
+	fmt.Println(dev.MtimeModel)
+	fmt.Println(dev)
+	//db.Insert(xxx)
+	//db.Select(xxx).Order().Limit()
+	//db.update(xxx)
 }

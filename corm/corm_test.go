@@ -1,45 +1,46 @@
 package corm
 
 import (
-	"corms/models"
-	"corms/setting"
 	"fmt"
+	"github.com/askYangc/corm/models"
+	"github.com/askYangc/corm/setting"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 
-func TestDoFunc(t *testing.T) {
-	var d []models.CmpAreas
-	err := models.DB().Select(&d, "select * from cmp_areas where id=100")
-	if err != nil {
-		t.Log(err)
-		t.Fail()
-	}
+func TestCorm(t *testing.T) {
+	tx := NewDB(models.DB())
 
-	for _, dd := range d {
-		dd.Show()
-	}
-
-}
-
-func TestParseTable(t *testing.T) {
 	dev := models.CmpDevs{
-		UserId:      4,
-
+		MtimeModel: models.MtimeModel{
+			CtimeModel: models.CtimeModel{},
+			Mtime:      time.Time{},
+		},
+		Sn:         "haha",
+		DevType:    1,
+		DevFunc:    2,
+		UserId:     3,
+		VendorId:   4,
 	}
-	err := ParseTable(&dev)
-	if err != nil {
-		t.Log(err)
+
+	x := tx.Insert(&dev)
+	if x.Error != nil {
+		t.Log(x.Error)
 		t.Fail()
 	}
+	t.Log(dev)
 }
+
+
 
 func TestMain(m *testing.M) {
 	path, _ := os.Getwd()
 	config := fmt.Sprintf("%s%c..%cconf%capp_local.ini", path, filepath.Separator, filepath.Separator, filepath.Separator)
 	setting.Setup(config)
 	models.Setup()
+
 	m.Run()
 }

@@ -3,7 +3,7 @@ package models
 import "fmt"
 
 type CmpDevs struct {
-	*MtimeModel
+	MtimeModel
 	Sn          string `db:"sn"`           //color_system_id ,我们分配的
 	DevType     uint16 `db:"dev_type"`     //设备类型	1,染色网关，2信令网关
 	DevFunc     uint32 `db:"dev_func"`     //设备功能，BIT(0) 染色功能; BIT(1) 信令功能

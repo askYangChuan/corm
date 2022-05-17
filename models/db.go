@@ -1,8 +1,8 @@
 package models
 
 import (
-	"corms/setting"
 	"fmt"
+	"github.com/askYangc/corm/setting"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
@@ -22,10 +22,10 @@ func mysqlInit() {
 	}
 	err = db.Ping()
 	if err != nil {
-		fmt.Println("connect ok")
+		fmt.Println("connect failed")
 		panic(err)
 	}
-
+	fmt.Println("connect ok")
 	//最大空闲连接数
 	//db.SetMaxIdleConns(5)
 	//最大连接数

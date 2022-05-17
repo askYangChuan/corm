@@ -1,32 +1,36 @@
-package corm
+package parse
 
 import (
-	"corms/utils"
 	"fmt"
+	"github.com/askYangc/corm/utils"
 	"log"
 	"reflect"
+	"sync"
 )
 
 var customTables = CustomTables{
-	Tables: make(map[string]SqlTable, 0),
+	Tables: sync.Map{},
 }
 
 
 type CustomTables struct {
-	Tables map[string]SqlTable
+	Tables sync.Map		//map [structName]*SqlTable
 }
 
 func (c *CustomTables) Show() {
 	fmt.Println("=========")
-	for _, v := range c.Tables {
+	c.Tables.Range(func(key, value interface{}) bool {
+		v := value.(*SqlTable)
 		v.Show()
-	}
+		return true
+	})
+
 	fmt.Println("=========")
 }
 
 type SqlField struct {
-	FiledName string
-	ColumnName string
+	FiledName string		//变量名
+	ColumnName string		//列名 tags
 	Field reflect.StructField
 }
 
@@ -38,7 +42,8 @@ func (field *SqlField) Show() {
 type SqlTable struct {
 	StructName string
 	TableName string
-	Fields map[string]SqlField
+	PrimaryTag string	//tags id
+	Fields map[string]SqlField		//key tags
 }
 
 func (table *SqlTable) Show() {
@@ -52,10 +57,14 @@ func (table *SqlTable) Show() {
 }
 
 func (table *SqlTable) parseStructFieldWithTag(t reflect.StructField, tags string) {
-
 	switch t.Type.Kind() {
 	case reflect.Ptr:
 		log.Panicf("corm not support tag with ptr, failed Filed: %s\n", t.Name)
+	}
+
+	pkey := t.Tag.Get("corm")
+	if pkey == "primaryKey" {
+		table.PrimaryTag = tags
 	}
 
 	table.Fields[tags] = SqlField{
@@ -97,12 +106,12 @@ func (table *SqlTable) ParseStruct(t reflect.Type) {
 	}
 }
 
-func getReflectValue(val interface{}) reflect.Value {
+func GetReflectValue(val interface{}) reflect.Value {
 	v := reflect.ValueOf(val)
 	switch v.Kind() {
 	case reflect.Ptr:
 		v = v.Elem()
-	case reflect.Struct:
+	//case reflect.Struct:
 	default:
 		log.Panicf("v Kind not ptr or struct, is %v", v.Kind())
 	}
@@ -130,23 +139,25 @@ func getTableNameByVal(v reflect.Value) string {
 	return utils.SnakeString(v.Elem().Type().Name())
 }
 
-func ParseTable(val interface{}) {
-	v := getReflectValue(val)
+//v is struct
+func ParseTable(v reflect.Value) *SqlTable{
 	t := v.Type()
 
-	_, ok := customTables.Tables[t.Name()]
+	sqlTableVal, ok := customTables.Tables.Load(t.Name())
 	if ok {
-		return
+		return sqlTableVal.(*SqlTable)
 	}
 
-	table := SqlTable{
+	table := &SqlTable{
 		StructName: t.Name(),
 		TableName:  getTableNameByVal(v),
+		PrimaryTag: "id",
 		Fields:     make(map[string]SqlField, 0),
 	}
 
 	table.ParseStruct(t)
-	customTables.Tables[t.Name()] = table
+	customTables.Tables.Store(t.Name(), table)
+	return table
 }
 
 func ShowAll() {
@@ -160,14 +171,26 @@ func Show(args ...interface{}) {
 	}
 
 	for i, _ := range args {
-		v := getReflectValue(args[i])
-		val, ok := customTables.Tables[v.Type().Name()]
+		v := GetReflectValue(args[i])
+		val, ok := customTables.Tables.Load(v.Type().Name())
 		if ok {
-			val.Show()
+			realVal := val.(*SqlTable)
+			realVal.Show()
 		}
 	}
 }
 
-func getTable(v reflect.Value) *SqlTable{
+func GetTable(v reflect.Value) *SqlTable {
+	return ParseTable(v)
+}
 
+
+//========================do========================
+
+func (table *SqlTable) GetSqlField(tag string) *SqlField{
+	if v, ok := table.Fields[tag]; ok {
+		return &v
+	}
+
+	return nil
 }

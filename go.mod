@@ -1,4 +1,4 @@
-module corms
+module github.com/askYangc/corm
 
 go 1.17
 
