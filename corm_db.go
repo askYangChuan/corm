@@ -1,6 +1,7 @@
 package corm
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"time"
@@ -185,6 +186,39 @@ func (db *DB) Get(value interface{}, args ...interface{}) (tx *DB) {
 	return tx
 }
 
+func (db *DB) Select(value interface{}, args ...interface{}) (tx *DB) {
+	tx = db.getInstance()
+	tx.Error = tx.Statement.Select(value, args...)
+	if tx.Error != nil {
+		return tx
+	}
+
+	//select
+	sqlStr, args := tx.Join()
+	fmt.Println(sqlStr)
+	fmt.Println(args)
+	tx.Error = tx.DB.Select(value, sqlStr, args...)
+	return tx
+}
+
+func (db *DB) Limit(num uint32, args ...uint32) (tx *DB) {
+	tx = db.getInstance()
+	if len(args) == 0 {
+		if num == 0 {
+			tx.Error = errors.New("corm.Limit is 0")
+			return tx
+		}
+		tx.Statement.SetLimit(0, num)
+	}else {
+		if len(args) != 1 {
+			tx.Error = errors.New("corm.Limit just accept 2 args")
+			return tx
+		}
+		tx.Statement.SetLimit(num, args[0])
+	}
+
+	return tx
+}
 
 
 func (db *DB) Join() (string, []interface{}) {

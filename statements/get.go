@@ -39,12 +39,16 @@ func (s *Statements) GenerateGetSql() string {
 	//use args
 	argWhere, ok := s.FuncArgs[0].(string)
 	if !ok {
-		s := fmt.Errorf("s.FuncArgs[0] is not string, is %+V", s.FuncArgs[0])
-		panic(s)
+		res := fmt.Errorf("s.FuncArgs[0] is not string, is %+V", s.FuncArgs[0])
+		panic(res)
 	}
 
 	s.Builder.WriteString(argWhere)
-	s.Builder.WriteString(" limit 1")
+
+	if !s.hasLimit() {
+		s.Builder.WriteString(" limit 1")
+	}
+
 	return s.Builder.String()
 }
 

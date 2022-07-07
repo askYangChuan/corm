@@ -60,12 +60,25 @@ func TestGet(t *testing.T) {
 	tx := NewDB(testDb)
 
 	dev := models.TestDevs{}
-	x := tx.Get(&dev, "dev_type=? and sn=?", 4, "1")
+	x := tx.Get(&dev, "dev_type=? limit 1", 4)
 	if x.Error != nil {
 		t.Log(x.Error)
 		t.Fail()
 	}
 	fmt.Println(dev)
+}
+
+func TestSelect(t *testing.T) {
+	tx := NewDB(testDb)
+
+	var devs []models.TestDevs
+	x := tx.Select(&devs, "dev_type=1 limit ?,?", 1, 2)
+	if x.Error != nil {
+		t.Log(x.Error)
+		t.Fail()
+	}
+
+	fmt.Println(devs)
 }
 
 func mysqlInit(databaseSetting *Database) {

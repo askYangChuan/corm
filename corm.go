@@ -62,6 +62,17 @@ func Get(value interface{}, args ...interface{}) error {
 	return tx.Error
 }
 
+//add select, condtions, args, just support all cloumns
+func Select(value interface{}, args ...interface{}) error {
+	tx := db.Select(value, args...)
+	return tx.Error
+}
+
+func Limit(num uint32, args ...uint32) (tx *DB) {
+	tx = db.Limit(num, args...)
+	return tx
+}
+
 
 
 func CormInit(sqlDb *sqlx.DB) {

@@ -119,6 +119,23 @@ func GetReflectValue(val interface{}) reflect.Value {
 	return v
 }
 
+//return a new reflect.Value
+func GetSlicePtrReflectValue(val interface{}) reflect.Value {
+	v := reflect.ValueOf(val)
+	if v.Kind() != reflect.Ptr {
+		log.Panicf("v Kind not ptr, is %v", v.Kind())
+	}
+
+	v = v.Elem()
+	//now is slice
+	if v.Kind() != reflect.Slice {
+		log.Panicf("v Kind not slice, is %v", v.Kind())
+	}
+
+	newV := reflect.New(v.Type().Elem())
+	return newV.Elem()
+}
+
 func getTableNameByVal(v reflect.Value) string {
 	switch v.Kind() {
 	case reflect.Struct:
@@ -142,6 +159,7 @@ func getTableNameByVal(v reflect.Value) string {
 //v is struct
 func ParseTable(v reflect.Value) *SqlTable{
 	t := v.Type()
+
 
 	sqlTableVal, ok := customTables.Tables.Load(t.Name())
 	if ok {

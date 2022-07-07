@@ -26,6 +26,9 @@ type Statements struct {
 	DoAction int
 	Table *parse.SqlTable
 
+	/*
+	//如果是普通函数，Value即传入的具有地址的对象，如果是select，则value是一个新创建的局部变量reflect.Value。
+	*/
 	Value reflect.Value
 
 	Columns []string		//字段
@@ -36,6 +39,15 @@ type Statements struct {
 
 	//args
 	FuncArgs []interface{}
+
+	//limit
+	LimitOffset	uint32
+	LimitNum	uint32
+}
+
+func (s *Statements) SetLimit(offset, num uint32) {
+	s.LimitOffset = offset
+	s.LimitNum = num
 }
 
 func (s *Statements) isZero(val reflect.Value) bool{
@@ -80,6 +92,8 @@ func (s *Statements) GetSql() string {
 		return s.GenerateDeleteSql()
 	case ACTION_GET:
 		return s.GenerateGetSql()
+	case ACTION_SELECT:
+		return s.GenerateSelectSql()
 	}
 	return ""
 }
@@ -96,6 +110,8 @@ func (s *Statements) GetArgs() (args []interface{}){
 		return s.GenerateDeleteArgs()
 	case ACTION_GET:
 		return s.GenerateGetArgs()
+	case ACTION_SELECT:
+		return s.GenerateSelectArgs()
 	}
 	return nil
 }
