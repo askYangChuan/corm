@@ -56,6 +56,13 @@ func Delete(value interface{}) error {
 	return tx.Error
 }
 
+//add get, condtions, args
+func Get(value interface{}, args ...interface{}) error {
+	tx := db.Get(value, args...)
+	return tx.Error
+}
+
+
 
 func CormInit(sqlDb *sqlx.DB) {
 	db = NewDB(sqlDb)

@@ -172,6 +172,20 @@ func (db *DB) Delete(value interface{}) (tx *DB) {
 	return tx
 }
 
+func (db *DB) Get(value interface{}, args ...interface{}) (tx *DB) {
+	tx = db.getInstance()
+	tx.Error = tx.Statement.Get(value, args...)
+	if tx.Error != nil {
+		return tx
+	}
+
+	//get
+	sqlStr, args := tx.Join()
+	tx.Error = tx.DB.Get(value, sqlStr, args...)
+	return tx
+}
+
+
 
 func (db *DB) Join() (string, []interface{}) {
 	return db.Statement.Join()

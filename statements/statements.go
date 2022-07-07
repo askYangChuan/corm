@@ -12,6 +12,7 @@ const ACTION_INSERT = 1
 const ACTION_UPDATE = 2
 const ACTION_INSERTORUPDATE = 3
 const ACTION_DELETE = 4
+const ACTION_GET = 5
 
 type Conditions struct {
 
@@ -32,6 +33,9 @@ type Statements struct {
 
 	//Omit
 	Omit []string			//column
+
+	//args
+	FuncArgs []interface{}
 }
 
 func (s *Statements) isZero(val reflect.Value) bool{
@@ -74,6 +78,8 @@ func (s *Statements) GetSql() string {
 		return s.GenerateInsertorUpdateSql()
 	case ACTION_DELETE:
 		return s.GenerateDeleteSql()
+	case ACTION_GET:
+		return s.GenerateGetSql()
 	}
 	return ""
 }
@@ -88,6 +94,8 @@ func (s *Statements) GetArgs() (args []interface{}){
 		return s.GenerateInsertorUpdateArgs()
 	case ACTION_DELETE:
 		return s.GenerateDeleteArgs()
+	case ACTION_GET:
+		return s.GenerateGetArgs()
 	}
 	return nil
 }

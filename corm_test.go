@@ -56,6 +56,17 @@ func TestCorm(t *testing.T) {
 	}
 }
 
+func TestGet(t *testing.T) {
+	tx := NewDB(testDb)
+
+	dev := models.TestDevs{}
+	x := tx.Get(&dev, "dev_type=? and sn=?", 4, "1")
+	if x.Error != nil {
+		t.Log(x.Error)
+		t.Fail()
+	}
+	fmt.Println(dev)
+}
 
 func mysqlInit(databaseSetting *Database) {
 	var err error
