@@ -3,6 +3,7 @@ package corm
 import (
 	"errors"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"reflect"
 	"time"
 )
@@ -110,11 +111,18 @@ func (db *DB) Insert(value interface{}) (tx *DB) {
 
 	//insert
 	sqlStr, args := tx.Join()
-	tx.Result, tx.Error = tx.DB.Exec(sqlStr, args...)
+
+	if tx.Tx != nil {
+		tx.Result, tx.Error = tx.Tx.Exec(sqlStr, args...)
+	}else {
+		tx.Result, tx.Error = tx.DB.Exec(sqlStr, args...)
+	}
+
 	if tx.Error != nil {
 		return tx
 	}
 	tx.updateInsertValue()
+	tx.Statement.Reset()
 	return tx
 }
 
@@ -131,11 +139,17 @@ func (db *DB) Update(value interface{}) (tx *DB) {
 
 	//update
 	sqlStr, args := tx.Join()
-	tx.Result, tx.Error = tx.DB.Exec(sqlStr, args...)
+	if tx.Tx != nil {
+		tx.Result, tx.Error = tx.Tx.Exec(sqlStr, args...)
+	}else {
+		tx.Result, tx.Error = tx.DB.Exec(sqlStr, args...)
+	}
+
 	if tx.Error != nil {
 		return tx
 	}
 	tx.updateUpdateValue()
+	tx.Statement.Reset()
 	return tx
 }
 
@@ -145,11 +159,17 @@ func (db *DB) InsertOrUpdate(value interface{}) (tx *DB) {
 
 	//insert or update
 	sqlStr, args := tx.Join()
-	tx.Result, tx.Error = tx.DB.Exec(sqlStr, args...)
+	if tx.Tx != nil {
+		tx.Result, tx.Error = tx.Tx.Exec(sqlStr, args...)
+	}else {
+		tx.Result, tx.Error = tx.DB.Exec(sqlStr, args...)
+	}
+
 	if tx.Error != nil {
 		return tx
 	}
 	tx.updateInsertOrUpdateValue()
+	tx.Statement.Reset()
 	return tx
 }
 
@@ -165,11 +185,17 @@ func (db *DB) Delete(value interface{}) (tx *DB) {
 
 	//delete
 	sqlStr, args := tx.Join()
-	tx.Result, tx.Error = tx.DB.Exec(sqlStr, args...)
+	if tx.Tx != nil {
+		tx.Result, tx.Error = tx.Tx.Exec(sqlStr, args...)
+	}else {
+		tx.Result, tx.Error = tx.DB.Exec(sqlStr, args...)
+	}
+
 	if tx.Error != nil {
 		return tx
 	}
 
+	tx.Statement.Reset()
 	return tx
 }
 
@@ -182,7 +208,13 @@ func (db *DB) Get(value interface{}, args ...interface{}) (tx *DB) {
 
 	//get
 	sqlStr, args := tx.Join()
-	tx.Error = tx.DB.Get(value, sqlStr, args...)
+	if tx.Tx != nil {
+		tx.Error = tx.Tx.Get(value, sqlStr, args...)
+	}else {
+		tx.Error = tx.DB.Get(value, sqlStr, args...)
+	}
+
+	tx.Statement.Reset()
 	return tx
 }
 
@@ -195,9 +227,13 @@ func (db *DB) Select(value interface{}, args ...interface{}) (tx *DB) {
 
 	//select
 	sqlStr, args := tx.Join()
-	fmt.Println(sqlStr)
-	fmt.Println(args)
-	tx.Error = tx.DB.Select(value, sqlStr, args...)
+	if tx.Tx != nil {
+		tx.Error = tx.Tx.Select(value, sqlStr, args...)
+	}else {
+		tx.Error = tx.DB.Select(value, sqlStr, args...)
+	}
+
+	tx.Statement.Reset()
 	return tx
 }
 
@@ -223,4 +259,34 @@ func (db *DB) Limit(num uint32, args ...uint32) (tx *DB) {
 
 func (db *DB) Join() (string, []interface{}) {
 	return db.Statement.Join()
+}
+
+
+//support trans
+func (db *DB) Beginx() (tx *DB, err error) {
+	tx = db.getInstance()
+
+	tx.Tx, err = tx.DB.Beginx()
+	return
+}
+
+func (db *DB) Commit() (tx *DB, err error) {
+	tx = db.getInstance()
+
+	err = tx.Tx.Commit()
+	return
+}
+
+func (db *DB) Rollback() (tx *DB, err error) {
+	tx = db.getInstance()
+
+	err = tx.Tx.Rollback()
+	return
+}
+
+func (db *DB) SetTx(extraTx *sqlx.Tx) (tx *DB) {
+	tx = db.getInstance()
+
+	tx.Tx = extraTx
+	return
 }

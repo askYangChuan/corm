@@ -45,7 +45,7 @@ func (s *Statements) GenerateGetSql() string {
 
 	s.Builder.WriteString(argWhere)
 
-	if !s.hasLimit() {
+	if !s.hasLimit() && !s.hasForUpdate() {
 		s.Builder.WriteString(" limit 1")
 	}
 

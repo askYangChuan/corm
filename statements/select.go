@@ -22,6 +22,15 @@ func (s *Statements) hasLimit() bool {
 	return false
 }
 
+func (s *Statements) hasForUpdate() bool {
+	//todo: for update必须中间只能一个空格，考虑用正则表达式处理
+	sql := s.Builder.String()
+	if strings.Contains(sql, "for update") {
+		return true
+	}
+	return false
+}
+
 
 func (s *Statements) Select(value interface{}, args ...interface{}) error {
 	//value is a arrays. convert it to internal object
@@ -54,7 +63,7 @@ func (s *Statements) GenerateSelectSql() string {
 
 	//set limit
 	//check limit
-	if !s.hasLimit() {
+	if !s.hasLimit() && !s.hasForUpdate() {
 		if s.LimitNum == 0 {
 			return s.Builder.String()
 		}

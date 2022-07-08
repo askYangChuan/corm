@@ -15,6 +15,9 @@ type DB struct {
 	//result
 	Result sql.Result
 	Error error
+
+	//support trans
+	Tx *sqlx.Tx
 }
 
 var (
@@ -22,11 +25,11 @@ var (
 )
 
 func NewDB(db *sqlx.DB) *DB {
-	return &DB{DB: db, clone : 1}
+	return &DB{DB: db, clone : 1, Tx: nil}
 }
 
 func CloneDB(db *DB) *DB {
-	return &DB{DB: db.DB}
+	return &DB{DB: db.DB, Tx: nil}
 }
 
 func (db *DB) getInstance() *DB {
@@ -73,6 +76,15 @@ func Limit(num uint32, args ...uint32) (tx *DB) {
 	return tx
 }
 
+
+//support trans
+func Beginx() (tx *DB, err error) {
+	return db.Beginx()
+}
+
+func SetTx(extraTx *sqlx.Tx) (tx *DB) {
+	return db.SetTx(extraTx)
+}
 
 
 func CormInit(sqlDb *sqlx.DB) {

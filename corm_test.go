@@ -6,6 +6,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"testing"
+	"time"
 )
 
 var testDb *sqlx.DB
@@ -81,6 +82,101 @@ func TestSelect(t *testing.T) {
 	fmt.Println(devs)
 }
 
+func TestInsert(t *testing.T) {
+	tx := NewDB(testDb)
+
+	dev := models.TestDevs{
+		Sn:         "haha1",
+		DevType:    1,
+		DevFunc:    2,
+		UserId:     3,
+		VendorId:   4,
+	}
+
+	x := tx.Insert(&dev)
+	if x.Error != nil {
+		t.Log(x.Error)
+		t.Fail()
+	}
+}
+
+func TestTrans(t *testing.T) {
+	c := NewDB(testDb)
+
+	tx, err := c.Beginx()
+	if err != nil {
+		t.Log(err)
+		t.Fail()
+		return
+	}
+
+	defer tx.Rollback()
+
+	dev := models.TestDevs{
+		Sn:       "tran1",
+		DevType:  6,
+		DevFunc:  6,
+		UserId:   6,
+		VendorId: 6,
+	}
+
+	tx.Insert(&dev)
+
+	tx.Commit()
+}
+
+func TestTrans2(t *testing.T) {
+	c := NewDB(testDb)
+
+	originTx, err := testDb.Beginx()
+	if err != nil {
+		t.Log(err)
+		t.Fail()
+		return
+	}
+
+	tx := c.SetTx(originTx)
+
+	defer tx.Rollback()
+
+	dev := models.TestDevs{
+		Sn:       "tran2",
+		DevType:  6,
+		DevFunc:  6,
+		UserId:   6,
+		VendorId: 6,
+	}
+
+	tx.Insert(&dev)
+	originTx.Commit()
+}
+
+func TestTransLock(t *testing.T) {
+	c := NewDB(testDb)
+
+	tx, err := c.Beginx()
+	if err != nil {
+		t.Log(err)
+		t.Fail()
+		return
+	}
+
+	defer tx.Rollback()
+
+	var dev models.TestDevs
+	tx.Get(&dev, "sn='wo' limit 1 for update")
+
+	dev.DevType = 9
+
+	fmt.Println(dev)
+
+	tx.Update(&dev)
+
+	time.Sleep(time.Second)
+
+	tx.Commit()
+}
+
 func mysqlInit(databaseSetting *Database) {
 	var err error
 	testDb, err = sqlx.Open(databaseSetting.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
@@ -108,8 +204,8 @@ func TestMain(m *testing.M) {
 	databaseSetting := Database{
 		Type:     "mysql",
 		User:     "root",
-		Password: "123456",
-		Host:     "10.135.255.202:3306",
+		Password: "",
+		Host:     "127.0.0.1:3306",
 		Name:     "test",
 	}
 	mysqlInit(&databaseSetting)

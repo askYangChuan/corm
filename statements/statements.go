@@ -45,6 +45,26 @@ type Statements struct {
 	LimitNum	uint32
 }
 
+func (s *Statements) Reset() {
+	s.DoAction = 0
+	s.Table = nil
+	s.LimitOffset = 0
+	s.LimitNum = 0
+
+	s.Builder.Reset()
+	if len(s.Columns) != 0 {
+		s.Columns = make([]string, 0)
+	}
+
+	if len(s.Omit) != 0 {
+		s.Omit = make([]string, 0)
+	}
+
+	if len(s.FuncArgs) != 0 {
+		s.FuncArgs = make([]interface{}, 0)
+	}
+}
+
 func (s *Statements) SetLimit(offset, num uint32) {
 	s.LimitOffset = offset
 	s.LimitNum = num
