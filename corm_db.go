@@ -340,9 +340,6 @@ func (db *DB) Commit() (tx *DB, err error) {
 	tx = db.getInstance()
 
 	err = tx.Tx.Commit()
-	if err != nil {
-		logging.ZError("corm Commit failed", zap.Error(err))
-	}
 	return
 }
 
@@ -350,9 +347,6 @@ func (db *DB) Rollback() (tx *DB, err error) {
 	tx = db.getInstance()
 
 	err = tx.Tx.Rollback()
-	if err != nil {
-		logging.ZError("corm Rollback failed", zap.Error(err))
-	}
 	return
 }
 

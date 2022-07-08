@@ -101,7 +101,7 @@ func TestInsert(t *testing.T) {
 	}
 }
 
-func TestTrans(t *testing.T) {
+func TestTransTheOne(t *testing.T) {
 	c := NewDB(testDb)
 
 	tx, err := c.Beginx()
@@ -126,7 +126,7 @@ func TestTrans(t *testing.T) {
 	tx.Commit()
 }
 
-func TestTrans2(t *testing.T) {
+func TestTransTheTwo(t *testing.T) {
 	c := NewDB(testDb)
 
 	originTx, err := testDb.Beginx()
