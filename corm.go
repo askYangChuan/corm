@@ -2,8 +2,10 @@ package corm
 
 import (
 	"database/sql"
+	"github.com/askYangc/corm/logging"
 	"github.com/askYangc/corm/statements"
 	"github.com/jmoiron/sqlx"
+	"go.uber.org/zap"
 )
 
 //update insert delete in not in join
@@ -86,9 +88,21 @@ func SetTx(extraTx *sqlx.Tx) (tx *DB) {
 	return db.SetTx(extraTx)
 }
 
-
-func CormInit(sqlDb *sqlx.DB) {
+/*
+	支持zap
+*/
+func CormInit(sqlDb *sqlx.DB, args ...interface{}) {
 	db = NewDB(sqlDb)
+	if len(args) == 0 {
+		return
+	}
+	logger, ok := args[0].(*zap.Logger)
+	if !ok {
+		panic("corm.CormInit args[0] is not zap.logger")
+	}
+	SetLogger(logger)
 }
 
-
+func SetLogger(logger *zap.Logger) {
+	logging.SetLogger(logger)
+}

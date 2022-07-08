@@ -5,6 +5,7 @@ import (
 	"github.com/askYangc/corm/models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+	"go.uber.org/zap"
 	"testing"
 	"time"
 )
@@ -208,7 +209,12 @@ func TestMain(m *testing.M) {
 		Host:     "127.0.0.1:3306",
 		Name:     "test",
 	}
+
 	mysqlInit(&databaseSetting)
+
+	logger, _ := zap.NewDevelopment()
+	SetLogger(logger)
+
 	m.Run()
 	testDb.Close()
 }
